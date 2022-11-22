@@ -76,6 +76,7 @@ public class SecSecurityConfig {
                 .authorizeRequests()
                 .antMatchers("/signin").permitAll()
                 .antMatchers("/refresh-token").permitAll()
+                .antMatchers("/file/**").permitAll()
                 .antMatchers("/signin/test").authenticated()
                 .anyRequest().authenticated();
 
