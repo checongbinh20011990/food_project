@@ -1,6 +1,7 @@
 package com.cybersoft.food_project.entity;
 
 import javax.persistence.*;
+import java.util.Set;
 
 @Entity(name = "user")
 public class UserEntity {
@@ -34,6 +35,39 @@ public class UserEntity {
 
     @Column(name = "is_active")
     private boolean isActive;
+
+    @OneToOne(mappedBy = "user")
+    private UserDetailEntity userDetail;
+
+    @OneToMany(mappedBy = "user")
+    private Set<FoodReviewEntity> foodReviews;
+
+    @OneToMany(mappedBy = "user")
+    private Set<TOtherEntity> tOthers;
+
+    public Set<TOtherEntity> gettOthers() {
+        return tOthers;
+    }
+
+    public void settOthers(Set<TOtherEntity> tOthers) {
+        this.tOthers = tOthers;
+    }
+
+    public Set<FoodReviewEntity> getFoodReviews() {
+        return foodReviews;
+    }
+
+    public void setFoodReviews(Set<FoodReviewEntity> foodReviews) {
+        this.foodReviews = foodReviews;
+    }
+
+    public UserDetailEntity getUserDetail() {
+        return userDetail;
+    }
+
+    public void setUserDetail(UserDetailEntity userDetail) {
+        this.userDetail = userDetail;
+    }
 
     public int getId() {
         return id;
