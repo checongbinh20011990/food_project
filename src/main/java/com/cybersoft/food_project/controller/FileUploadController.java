@@ -24,7 +24,6 @@ public class FileUploadController {
 
     @PostMapping("/upload")
     public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file){
-        System.out.println("kiemtra " + file.getOriginalFilename());
         fileUploadService.storeFile(file);
         return new ResponseEntity<>("", HttpStatus.OK);
     }

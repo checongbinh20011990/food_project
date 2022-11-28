@@ -1,5 +1,7 @@
 package com.cybersoft.food_project.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 
 @Entity(name = "restaurant_review")
