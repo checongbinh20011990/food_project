@@ -9,4 +9,6 @@ import java.util.List;
 public interface RestaurantService {
     List<ResraurantDTO> getRestaurants();
     RestaurantDetailDTO getDetailRestaurant(int id);
+
+    void clearAllCache();
 }

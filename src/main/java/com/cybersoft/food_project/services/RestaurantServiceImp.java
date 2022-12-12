@@ -2,10 +2,16 @@ package com.cybersoft.food_project.services;
 
 import com.cybersoft.food_project.dto.ResraurantDTO;
 import com.cybersoft.food_project.dto.RestaurantDetailDTO;
+import com.cybersoft.food_project.entity.FoodEntity;
 import com.cybersoft.food_project.entity.RestaurantEntity;
 import com.cybersoft.food_project.entity.RestaurantReviewEntity;
+import com.cybersoft.food_project.model.FoodModel;
 import com.cybersoft.food_project.repository.RestaurantRepository;
+import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -17,6 +23,9 @@ public class RestaurantServiceImp implements RestaurantService{
 
     @Autowired
     RestaurantRepository restaurantRepository;
+
+    @Autowired
+    RedisTemplate redisTemplate;
 
     @Override
     public List<ResraurantDTO> getRestaurants() {
@@ -45,28 +54,60 @@ public class RestaurantServiceImp implements RestaurantService{
     }
 
     @Override
+//    @Cacheable("detail_restaurent")
     public RestaurantDetailDTO getDetailRestaurant(int id) {
-        //Optional : tức là có hoặc không có cũng được ( Dữ liệu có thể bị null )
-        Optional<RestaurantEntity> restaurantEntity = restaurantRepository.findById(id);
+        String key = "res" + id;
+        Gson gson = new Gson();
         RestaurantDetailDTO restaurantDetailDTO = new RestaurantDetailDTO();
-        if(restaurantEntity.isPresent()){
-            //Có giá trị thì xử lý
-            restaurantDetailDTO.setTitle(restaurantEntity.get().getName());
-            restaurantDetailDTO.setImage(restaurantEntity.get().getImage());
+
+        if(redisTemplate.hasKey(key)){
+            //Key có tồn tại
+            String data = (String) redisTemplate.opsForValue().get(key);
+            restaurantDetailDTO = gson.fromJson(data,RestaurantDetailDTO.class);
+        }else{
+            //Key không tồn tại
+            //Optional : tức là có hoặc không có cũng được ( Dữ liệu có thể bị null )
+            Optional<RestaurantEntity> restaurantEntity = restaurantRepository.findById(id);
+
+            if(restaurantEntity.isPresent()){
+                //Có giá trị thì xử lý
+                restaurantDetailDTO.setTitle(restaurantEntity.get().getName());
+                restaurantDetailDTO.setImage(restaurantEntity.get().getImage());
 //            restaurantDetailDTO.setDesc();
-            float avgRate = 0;
-            float sumRate = 0;
-            for (RestaurantReviewEntity dataReview: restaurantEntity.get().getRestaurantReviews()) {
-                sumRate += dataReview.getRate();
+                float avgRate = 0;
+                float sumRate = 0;
+                for (RestaurantReviewEntity dataReview: restaurantEntity.get().getRestaurantReviews()) {
+                    sumRate += dataReview.getRate();
+                }
+                if(restaurantEntity.get().getRestaurantReviews().size() > 0){
+                    avgRate = sumRate/restaurantEntity.get().getRestaurantReviews().size();
+                }
+                restaurantDetailDTO.setAvgRate(avgRate);
+
+                List<FoodModel> foodModels = new ArrayList<>();
+                for (FoodEntity foodEntity:restaurantEntity.get().getFoods()) {
+                    FoodModel foodModel = new FoodModel();
+                    foodModel.setId(foodEntity.getId());
+                    foodModel.setName(foodEntity.getName());
+                    foodModel.setImage(foodEntity.getImage());
+                    foodModel.setPrice(foodEntity.getPrice());
+
+                    foodModels.add(foodModel);
+                }
+
+                restaurantDetailDTO.setFoods(foodModels);
             }
-            if(restaurantEntity.get().getRestaurantReviews().size() > 0){
-                avgRate = sumRate/restaurantEntity.get().getRestaurantReviews().size();
-            }
-            restaurantDetailDTO.setAvgRate(avgRate);
+
+            String json = gson.toJson(restaurantDetailDTO);
+            redisTemplate.opsForValue().set(key,json);
         }
+
+
 
         return restaurantDetailDTO;
     }
-
+    @Override
+    @CacheEvict( value = "detail_restaurent", allEntries = true)
+    public void clearAllCache(){}
 
 }

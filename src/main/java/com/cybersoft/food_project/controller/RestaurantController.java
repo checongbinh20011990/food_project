@@ -25,8 +25,15 @@ public class RestaurantController {
     @GetMapping("")
     public ResponseEntity<?> getRestaurant(){
         List<ResraurantDTO> responseEntities = restaurantService.getRestaurants();
+
         System.out.println("kiemtra " + responseEntities.size());
         return new ResponseEntity<>(responseEntities, HttpStatus.OK);
+    }
+
+    @GetMapping("/clear-cache")
+    public ResponseEntity<?> clearCacheRestaurant(){
+        restaurantService.clearAllCache();
+        return new ResponseEntity<>("", HttpStatus.OK);
     }
 
     @GetMapping("/{id}")

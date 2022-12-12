@@ -19,3 +19,17 @@ server:
 #@Value(${tenkey}) : Lấy giá trị key bên appplication thành biến
 file:
   upload-dir: /Users/binhcc/Desktop/image
+
+redis:
+  host: localhost
+  port: 6379
+
+#Đăng ký level log cho toàn project
+#logging:
+#  level:
+#    root: info
+#  file:
+#    name: /Users/binhcc/Desktop/log/dev.log
+#  pattern:
+#    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} - %-5level %n"
+
